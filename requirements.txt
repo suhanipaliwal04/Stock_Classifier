@@ -1,0 +1,10 @@
+streamlit
+scikit-learn
+pandas
+numpy
+matplotlib
+yfinance
+joblib
+xgboost   # optional
+lightgbm  # optional
+ta
