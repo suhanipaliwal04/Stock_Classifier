@@ -17,29 +17,29 @@
 #     # If it's just a single model object
 #     model = model_data
 #     expected_features = None
-import streamlit as st
-import pandas as pd
-import yfinance as yf
-import joblib
+# import streamlit as st
+# import pandas as pd
+# import yfinance as yf
+# import joblib
 
-# Load saved model data
-model_data = joblib.load("best_stock_model.pkl")
+# # Load saved model data
+# model_data = joblib.load("best_stock_model.pkl")
 
-if isinstance(model_data, dict):
-    model = model_data["best_model"]
-    expected_features = model_data.get("feature_names", [])
-    accuracy = model_data.get("accuracy", None)
-else:
-    model = model_data
-    expected_features = []
-    accuracy = None
+# if isinstance(model_data, dict):
+#     model = model_data["best_model"]
+#     expected_features = model_data.get("feature_names", [])
+#     accuracy = model_data.get("accuracy", None)
+# else:
+#     model = model_data
+#     expected_features = []
+#     accuracy = None
 
-st.title("📈 Stock Price Movement Prediction")
-st.write("This app predicts **whether a stock will go UP or DOWN tomorrow** based on historical data and indicators.")
-if accuracy:
-    st.caption(f"Model Accuracy: {accuracy:.2%}")
-# Input ticker
-ticker = st.text_input("Enter Stock Symbol (e.g., AAPL, MSFT, TSLA):", "AAPL")
+# st.title("📈 Stock Price Movement Prediction")
+# st.write("This app predicts **whether a stock will go UP or DOWN tomorrow** based on historical data and indicators.")
+# if accuracy:
+#     st.caption(f"Model Accuracy: {accuracy:.2%}")
+# # Input ticker
+# ticker = st.text_input("Enter Stock Symbol (e.g., AAPL, MSFT, TSLA):", "AAPL")
 
 # if st.button("Predict Next Day Movement"):
 #     st.write(f"Fetching data for {ticker}...")
