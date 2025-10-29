@@ -8,3 +8,4 @@ joblib
 xgboost   # optional
 lightgbm  # optional
 ta
+plotly
