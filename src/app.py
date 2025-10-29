@@ -214,7 +214,10 @@ import plotly.graph_objects as go
 # ======================
 # Load Model
 # ======================
-model_data = joblib.load("best_stock_model.pkl")
+import os
+
+model_path = os.path.join(os.path.dirname(__file__), "best_stock_model.pkl")
+model_data = joblib.load(model_path)
 
 if isinstance(model_data, dict):
     model = model_data["best_model"]
