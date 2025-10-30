@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 import joblib
-
+import seaborn as sns
 # Data fetching
 try:
     import yfinance as yf
@@ -112,6 +112,119 @@ def prepare_dataset(ticker="AAPL", period="5y"):
         'MA5','MA10','MA20','MA_ratio_5_20','vol_5','vol_10',
         'momentum_5','RSI','MACD','dow'
     ]
+    print("\n🔍 Performing Exploratory Data Analysis...")
+
+    # ===============================
+    # 1️⃣ UNIVARIATE ANALYSIS
+    # ===============================
+    print("\n📊 Univariate Analysis - Distribution & Trend")
+    plt.figure(figsize=(10, 5))
+    plt.plot(df['Adj Close'], label='Adjusted Close', color='blue')
+    plt.title(f"{ticker} Adjusted Close Price Over Time")
+    plt.xlabel("Date")
+    plt.ylabel("Price")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # Histogram of Adjusted Close
+    plt.figure(figsize=(8, 5))
+    sns.histplot(df['Adj Close'], kde=True, color='skyblue', bins=30)
+    plt.title("Distribution of Adjusted Close Prices")
+    plt.xlabel("Adjusted Close Price")
+    plt.ylabel("Frequency")
+    plt.show()
+
+    # RSI Distribution
+    plt.figure(figsize=(8, 5))
+    sns.histplot(df['RSI'], kde=True, color='purple', bins=30)
+    plt.title("Distribution of RSI Values")
+    plt.xlabel("RSI")
+    plt.ylabel("Frequency")
+    plt.show()
+
+    # ===============================
+    # 2️⃣ BIVARIATE ANALYSIS
+    # ===============================
+    print("\n🔗 Bivariate Analysis - Relationship between Variables")
+
+    # RSI vs Adjusted Close
+    plt.figure(figsize=(8, 5))
+    sns.scatterplot(x=df['RSI'], y=df['Adj Close'], color='mediumpurple')
+    plt.title("RSI vs Adjusted Close Price")
+    plt.xlabel("RSI")
+    plt.ylabel("Adjusted Close")
+    plt.grid(True)
+    plt.show()
+
+    # MACD vs Adjusted Close
+    plt.figure(figsize=(8, 5))
+    sns.scatterplot(x=df['MACD'], y=df['Adj Close'], color='orange')
+    plt.title("MACD vs Adjusted Close Price")
+    plt.xlabel("MACD")
+    plt.ylabel("Adjusted Close")
+    plt.grid(True)
+    plt.show()
+
+    # ===============================
+    # 3️⃣ MULTIVARIATE ANALYSIS
+    # ===============================
+    print("\n🌐 Multivariate Analysis - Correlation and Interactions")
+
+    plt.figure(figsize=(10, 8))
+    sns.heatmap(df[features + ['Target']].corr(), annot=True, fmt=".2f", cmap="coolwarm", linewidths=0.5)
+    plt.title("Feature Correlation Heatmap")
+    plt.show()
+
+    # Pairplot for selected important features
+    important_features = ['RSI', 'MACD', 'MA5', 'MA20', 'vol_5', 'vol_10', 'Target']
+    sns.pairplot(df[important_features], diag_kind="kde", corner=True)
+    plt.suptitle("Pairwise Relationships Between Key Features", y=1.02)
+    plt.show()
+
+    # ===============================
+    # 4️⃣ TECHNICAL INDICATORS & VOLATILITY
+    # ===============================
+    print("\n📈 Technical Indicators Overview")
+    
+    # Volatility comparison
+    plt.figure(figsize=(10, 4))
+    plt.plot(df['vol_5'], label='5-Day Volatility', color='brown')
+    plt.plot(df['vol_10'], label='10-Day Volatility', color='gold')
+    plt.title("Volatility Comparison (5 vs 10 days)")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # ===============================
+    # 5️⃣ MOVING AVERAGES
+    # ===============================
+    print("\n📊 Moving Averages Trend")
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(df['Adj Close'], label='Adj Close', color='black', linewidth=1.5)
+    plt.plot(df['MA5'], label='MA5', color='green', linestyle='--')
+    plt.plot(df['MA20'], label='MA20', color='orange', linestyle='--')
+    plt.title("Moving Averages vs Adjusted Close")
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+    # ===============================
+    # 6️⃣ TARGET VARIABLE DISTRIBUTION
+    # ===============================
+    print("\n🎯 Target Variable Distribution")
+
+    plt.figure(figsize=(6, 4))
+    sns.countplot(x=df['Target'], palette='Set2')
+    plt.title("Distribution of Target Classes (0 = Down, 1 = Up)")
+    plt.xlabel("Target")
+    plt.ylabel("Count")
+    plt.show()
+
+    print("✅ EDA completed successfully.\n")
+
+
     X = df[features]
     y = df['Target']
     return df, X, y
@@ -119,9 +232,12 @@ def prepare_dataset(ticker="AAPL", period="5y"):
 # -------------------------
 # 5) Train + compare models
 # -------------------------
-def train_and_compare(X, y, results_path="results.csv", model_out="best_model.joblib"):
+def train_and_compare(X, y, results_path="results.csv", model_out="best_stock_model.joblib"):
     # Split time-aware: use shuffle=False if you want time-split; here we use stratified random split for classification practice
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
+    split = int(len(X) * 0.8)
+    X_train, X_test = X.iloc[:split], X.iloc[split:]
+    y_train, y_test = y.iloc[:split], y.iloc[split:]
 
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
@@ -187,8 +303,8 @@ def train_and_compare(X, y, results_path="results.csv", model_out="best_model.jo
             'f1': f1,
             'roc_auc': auc
         })
-        if f1 > best_score:
-            best_score = f1
+        if acc > best_score:
+            best_score = acc
             best_model = clf
             best_model_name = name
 
@@ -198,7 +314,8 @@ def train_and_compare(X, y, results_path="results.csv", model_out="best_model.jo
     # joblib.dump({'model':best_model, 'scaler':scaler, 'features':X.columns.tolist()}, model_out)
     joblib.dump({
     "best_model": best_model,
-    "feature_names": list(X.columns)
+    "feature_names": list(X.columns),
+    'scaler':scaler
     }, "best_stock_model.pkl")
     print("Best model:", best_model_name, "saved to", model_out)
     return results_df, model_out
@@ -212,3 +329,4 @@ if __name__ == "__main__" and os.getenv("RUN_STAGE","train")=="train":
     print("Data prepared. Rows:", len(df))
     results_df, saved_path = train_and_compare(X, y, results_path="results.csv", model_out="best_model.joblib")
     print(results_df)
+
